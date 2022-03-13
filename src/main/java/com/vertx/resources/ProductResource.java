@@ -18,8 +18,10 @@ public class ProductResource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ProductResource.class);
 
+    private Vertx vertx = null;
 
     public Router getAPISubRouter(Vertx vertx) {
+        this.vertx = vertx;
 
         Router apiSubRouter = Router.router(vertx);
 
@@ -151,6 +153,44 @@ public class ProductResource {
                 .setStatusCode(200)
                 .putHeader("content-type", "application/json")
                 .end();
+
+
+    }
+
+    // send message to event bus
+
+    public void getAllProductsToEB(RoutingContext routingContext) {
+        JsonObject cmdJson = new JsonObject();
+        cmdJson.put("cmd", "findAll");
+        vertx.eventBus().send("com.vertx", cmdJson.toString(), reply -> {
+            if (reply.succeeded()) {
+                JsonObject replyResults = new JsonObject(reply.result().body().toString());
+                System.out.println("Got Reply message=" + replyResults.toString());
+                routingContext.response()
+                        .setStatusCode(200)
+                        .putHeader("content-type", "application/json")
+                        .end(Json.encodePrettily(replyResults));
+            }
+        });
+    }
+
+    // Get one products that matches the input id and return as single json object
+    public void getProductByIdToEB(RoutingContext routingContext) {
+        final String productId = routingContext.request().getParam("id");
+        JsonObject cmdJson = new JsonObject();
+        cmdJson.put("cmd", "findById");
+        cmdJson.put("productId", productId);
+        vertx.eventBus().send("com.vertx", cmdJson.toString(), reply -> {
+            if (reply.succeeded()) {
+                JsonObject replyResults = new JsonObject(reply.result().body().toString());
+                System.out.println("Got Reply message=" + replyResults.toString());
+                routingContext.response()
+                        .setStatusCode(200)
+                        .putHeader("content-type", "application/json")
+                        .end(Json.encodePrettily(replyResults));
+            }
+        });
+
 
 
     }

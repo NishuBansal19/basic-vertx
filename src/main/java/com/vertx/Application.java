@@ -1,5 +1,6 @@
 package com.vertx;
 
+import com.vertx.database.MongoManager;
 import com.vertx.dto.MyItem;
 import com.vertx.entity.Product;
 import com.vertx.resources.ProductResource;
@@ -75,6 +76,10 @@ public class Application extends AbstractVerticle {
 
         mongoClient = MongoClient.createShared(vertx, dbConfig);
 
+        // if using mongo manager
+//        MongoManager mongoManager = new MongoManager(mongoClient);
+//
+//        mongoManager.registerConsumer(vertx);
 
         // Consumer for listening events
 //		vertx.createHttpServer().requestHandler(router::accept).listen(8080);
